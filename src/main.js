@@ -6,6 +6,13 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import gsap from "gsap"
 import { OBJExporter } from 'three/examples/jsm/Addons.js';
 
+// Constants
+import { textureMap, skybox, video } from './constants/textures.js';
+import { glassMaterialConfig, whiteMaterialConfig, waterMaterialConfig, meshPatterns } from './constants/materials.js';
+import { hoverAnimation, fanRotation, modalTransition } from './constants/animations.js';
+import { socialLinks, modalSelectors, modalButtonPatterns } from './constants/interactions.js';
+import { cameraConfig, controlsConfig, rendererConfig } from './constants/camera.js';
+
 
 const canvas = document.querySelector("#experience-canvas")
 const sizes = {
@@ -13,11 +20,9 @@ const sizes = {
   height: window.innerHeight
 };
 
-const modals = {
-  work: document.querySelector(".modal"),
-  about: document.querySelector(".modal"),
-  contact: document.querySelector(".modal"),
-}
+const modals = Object.fromEntries(
+  Object.entries(modalSelectors).map(([key, selector]) => [key, document.querySelector(selector)])
+);
 
 let touchHappened = false;
 document.querySelectorAll(".modal-exit-button").forEach((button)=>{
@@ -34,7 +39,7 @@ document.querySelectorAll(".modal-exit-button").forEach((button)=>{
   },{passive: false})
 })
 
-let isModalOpen = false; 
+let isModalOpen = false;
 const showModal = (modal)=>{
   modal.style.display = "block"
   isModalOpen = true;
@@ -45,16 +50,16 @@ const showModal = (modal)=>{
     currentHoveredObject = null;
   }
   document.body.style.cursor = "default";
-  currentIntersectObject = [];
+  currentIntersects = [];
 
   gsap.set(modal, {opacity: 0});
-  gsap.to(modal, {opacity: 1, duration: 0.5,});
+  gsap.to(modal, {opacity: 1, duration: modalTransition.fadeInDuration});
 }
 const hideModal = (modal)=>{
   modal.style.display = "block"
   isModalOpen = false;
   controls.enabled = true;
-  gsap.to(modal, {opacity: 0, duration: 0.5, onComplete: ()=>{
+  gsap.to(modal, {opacity: 0, duration: modalTransition.fadeOutDuration, onComplete: ()=>{
     modal.style.display = "none"
   }});
 }
@@ -70,12 +75,6 @@ const raycasterObjects = [];
 let currentIntersects = [];
 let currentHoveredObject = null;
 
-const socialLinks = {
-  "GitHub": "https://www.github.com/",
-  "LinkedIn": "https://www.linkedin.com/",
-  "YouTube": "https://www.youtube.com/",
-}
-
 
 // ––––––––––Loaders–––––––––– //
 
@@ -83,10 +82,8 @@ const socialLinks = {
 const textureLoader = new THREE.TextureLoader();
 
   // Skybox
-const cubeTextureLoader = new THREE.CubeTextureLoader().setPath( 'textures/skybox/' );
-const environmentMap = cubeTextureLoader.load( [
-	'px.webp', 'nx.webp', 'py.webp', 'ny.webp', 'pz.webp', 'nz.webp'
-] );
+const cubeTextureLoader = new THREE.CubeTextureLoader().setPath(skybox.path);
+const environmentMap = cubeTextureLoader.load(skybox.faces);
 
 // Model Loader
 const dracoLoader = new DRACOLoader();
@@ -94,29 +91,6 @@ dracoLoader.setDecoderPath( '/draco/' );
 
 const loader = new GLTFLoader();
 loader.setDRACOLoader( dracoLoader );
-
-const textureMap = {
-  First: {
-    day: "/textures/room/day/First_Bake1_CyclesBake_COMBINED.webp",
-    night: "/textures/room/night/First_Bake1_CyclesBake_COMBINED.webp"
-  },
-  Second: {
-    day: "/textures/room/day/Second_Bake1_CyclesBake_COMBINED.webp",
-    night: "/textures/room/night/Second_Bake1_CyclesBake_COMBINED.webp"
-  },
-  Third: {
-    day: "/textures/room/day/Third_Bake1_CyclesBake_COMBINED.webp",
-    night: "/textures/room/day/Third_Bake1_CyclesBake_COMBINED.webp"
-  },
-  Fourth: {
-    day: "/textures/room/day/Fourth_Bake1_CyclesBake_COMBINED.webp",
-    night: "/textures/room/day/Fourth_Bake1_CyclesBake_COMBINED.webp"
-  },
-  Fifth: {
-    day: "/textures/room/day/Fifth_Bake1_CyclesBake_COMBINED.webp",
-    night: "/textures/room/day/Fifth_Bake1_CyclesBake_COMBINED.webp"
-  }
-}
 
 
 const loadedTextures = {
@@ -136,10 +110,10 @@ Object.entries(textureMap).forEach(([key,paths])=>{
 });
 
 const videoElement = document.createElement("video")
-videoElement.src = "/textures/video/Screen.mp4"
-videoElement.loop = true;
-videoElement.muted = true;
-videoElement.autoplay = true;
+videoElement.src = video.src;
+videoElement.loop = video.loop;
+videoElement.muted = video.muted;
+videoElement.autoplay = video.autoplay;
 videoElement.play();
 
 const videoTexture = new THREE.VideoTexture(videoElement);
@@ -147,53 +121,36 @@ videoTexture.colorSpace = THREE.SRGBColorSpace;
 videoTexture.flipY = false;
 
 const glassMaterial = new THREE.MeshPhysicalMaterial({
-  transmission: 1,
-  opacity: 1,
-  metalness: 0,
-  roughness: 0,
-  ior: 1.5,
-  thickness: 0.01,
-  specularIntensity: 1,
+  ...glassMaterialConfig,
   envMap: environmentMap,
-  envMapIntensity: 1,
-  depthWrite:false,
 });
-const whiteMaterial = new THREE.MeshBasicMaterial({
-  color:0xffffff,
-});
-const screenMaterial = new THREE.MeshBasicMaterial({
-  map: videoTexture,
-});
-const waterMaterial = new THREE.MeshBasicMaterial({
-  color:0x558BC8,
-  transparent:true,
-  opacity:0.6,
-  depthWrite:false,
-});
+const whiteMaterial = new THREE.MeshBasicMaterial(whiteMaterialConfig);
+const screenMaterial = new THREE.MeshBasicMaterial({ map: videoTexture });
+const waterMaterial = new THREE.MeshBasicMaterial(waterMaterialConfig);
 
 loader.load("/models/Room_Portfolio-v1.glb", (glb) => {
   glb.scene.traverse(child=>{
     if(child.isMesh){
-      if(child.name.includes("Raycaster")){
+      if(child.name.includes(meshPatterns.raycaster)){
           raycasterObjects.push(child)
       }
-      if(child.name.includes("Hover")){
+      if(child.name.includes(meshPatterns.hover)){
         child.userData.initialScale = new THREE.Vector3().copy(child.scale)
         child.userData.initialPosition = new THREE.Vector3().copy(child.position)
         child.userData.initialRotation = new THREE.Euler().copy(child.rotation)
 
       }
-      
-      if(child.name.includes("Glass")){
+
+      if(child.name.includes(meshPatterns.glass)){
         child.material = glassMaterial;
       }
-      else if(child.name.includes("Bubble")){
+      else if(child.name.includes(meshPatterns.bubble)){
         child.material = whiteMaterial;
       }
-      else if(child.name.includes("Screen")){
+      else if(child.name.includes(meshPatterns.screen)){
         child.material = screenMaterial;
       }
-      else if(child.name.includes("Water")){
+      else if(child.name.includes(meshPatterns.water)){
         child.material = waterMaterial;
       }
       else{
@@ -208,7 +165,7 @@ loader.load("/models/Room_Portfolio-v1.glb", (glb) => {
           }
 
           if(child.name.includes("Fan")){
-            if(child.name.includes("Fan_4") || child.name.includes("Fan_5")){
+            if(fanRotation.xAxisPattern.some(pattern => child.name.includes(pattern))){
               xAxisFans.push(child);
             }
             else{
@@ -227,11 +184,11 @@ loader.load("/models/Room_Portfolio-v1.glb", (glb) => {
 const scene = new THREE.Scene();
 scene.background = environmentMap;
 
-const camera = new THREE.PerspectiveCamera( 45, sizes.width / sizes.height, 0.1, 1000 );
-camera.position.set(6.096062189226614,4.904207965983131,5.921979211737337)
+const camera = new THREE.PerspectiveCamera( cameraConfig.fov, sizes.width / sizes.height, cameraConfig.near, cameraConfig.far );
+camera.position.set(cameraConfig.position.x, cameraConfig.position.y, cameraConfig.position.z);
 
-const renderer = new THREE.WebGLRenderer({canvas: canvas, antialias: true});
-renderer.setPixelRatio(Math.min(window.devicePixelRatio,2))
+const renderer = new THREE.WebGLRenderer({canvas: canvas, antialias: rendererConfig.antialias});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, rendererConfig.maxPixelRatio));
 renderer.setSize( sizes.width , sizes.height );
 
 // const geometry = new THREE.BoxGeometry( 1, 1, 1 );
@@ -242,18 +199,11 @@ renderer.setSize( sizes.width , sizes.height );
 
 const controls = new OrbitControls( camera, renderer.domElement );
 
-// controls.minDistance = 3;
-// controls.maxDistance = 20;
-// controls.minPolarAngle = Math.PI/18;
-// controls.maxPolarAngle = Math.PI/2;
-// controls.minAzimuthAngle = 0;
-// controls.maxAzimuthAngle = Math.PI/2.3;
-
 // controls.update() must be called after any manual changes to the camera's transform
-controls.enableDamping = true;
-controls.dampingFactor = 0.05;
+controls.enableDamping = controlsConfig.enableDamping;
+controls.dampingFactor = controlsConfig.dampingFactor;
 controls.update();
-controls.target.set(-0.4157927443992023,1.0391870673201113,-0.37819867418043385)
+controls.target.set(controlsConfig.target.x, controlsConfig.target.y, controlsConfig.target.z);
 
 
 
@@ -266,10 +216,10 @@ window.addEventListener("resize", ()=>{
 
   // Update Camera
   camera.aspect = sizes.width / sizes.height
-  camera.updateProjectionMatrix
+  camera.updateProjectionMatrix()
 
   // Update Renderer
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio,2))
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, rendererConfig.maxPixelRatio));
   renderer.setSize( sizes.width , sizes.height );
 })
 
@@ -307,17 +257,12 @@ function handleRaycasterInteraction(){
       }
     });
 
-    if(object.name.includes("Work_Button")){
-      showModal(modals.work)
-    }
-    else if(object.name.includes("About_Button")){
-      showModal(modals.about)
-    }
-    else if(object.name.includes("Contact_Button")){
-      showModal(modals.contact)
-    }
-
-
+    modalButtonPatterns.forEach(pattern => {
+      if(object.name.includes(pattern)){
+        const modalKey = pattern.split("_")[0].toLowerCase();
+        showModal(modals[modalKey]);
+      }
+    });
   }
 }
 
@@ -333,18 +278,20 @@ function playHoverAnimation(object, isHovering){
   gsap.killTweensOf(object.rotation)
   gsap.killTweensOf(object.position)
 
+  const { scaleMultiplier, rotationOffset, duration, ease } = hoverAnimation;
+
   if(isHovering){
     gsap.to(object.scale, {
-      x: object.userData.initialScale.x *1.2,
-      y: object.userData.initialScale.y *1.2,
-      z: object.userData.initialScale.z *1.2,
-      duration: 0.5,
-      ease:"bounce.out(1.8)",
+      x: object.userData.initialScale.x * scaleMultiplier,
+      y: object.userData.initialScale.y * scaleMultiplier,
+      z: object.userData.initialScale.z * scaleMultiplier,
+      duration: duration.hoverIn,
+      ease,
     })
     gsap.to(object.rotation, {
-      x: object.userData.initialRotation.x +Math.PI/8,
-      duration: 0.5,
-      ease:"bounce.out(1.8)",
+      x: object.userData.initialRotation.x + rotationOffset,
+      duration: duration.hoverIn,
+      ease,
     })
   }
   else{
@@ -352,13 +299,13 @@ function playHoverAnimation(object, isHovering){
       y: object.userData.initialScale.y,
       x: object.userData.initialScale.x,
       z: object.userData.initialScale.z,
-      duration: 0.3,
-      ease:"bounce.out(1.8)",
+      duration: duration.hoverOut,
+      ease,
     })
     gsap.to(object.rotation, {
       x: object.userData.initialRotation.x,
-      duration: 0.3,
-      ease:"bounce.out(1.8)",
+      duration: duration.hoverOut,
+      ease,
     })
   }
 }
@@ -370,10 +317,10 @@ const animate = (time) =>{
 
   // Animate Fans
   xAxisFans.forEach(fan=>{
-    fan.rotation.x += 0.01
+    fan.rotation.x += fanRotation.speed
   })
   yAxisFans.forEach(fan=>{
-    fan.rotation.y += 0.01
+    fan.rotation.y += fanRotation.speed
   })
 
   // Raycasting
@@ -388,20 +335,20 @@ const animate = (time) =>{
     }
     if(currentIntersects.length>0){
       const currentIntersectObject = currentIntersects[0].object
-      
-      if(currentIntersectObject.name.includes("Hover")){
+
+      if(currentIntersectObject.name.includes(meshPatterns.hover)){
         if(currentIntersectObject !== currentHoveredObject){
-          
+
           if(currentHoveredObject){
             playHoverAnimation(currentHoveredObject, false)
           }
-          
+
           playHoverAnimation(currentIntersectObject, true)
           currentHoveredObject = currentIntersectObject;
         }
       }
-      
-      if(currentIntersectObject.name.includes("Pointer")){
+
+      if(currentIntersectObject.name.includes(meshPatterns.pointer)){
         document.body.style.cursor = "pointer"
       }
       else{
