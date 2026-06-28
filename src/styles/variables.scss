@@ -1,19 +1,37 @@
-$base-dark-purple: #6c3f7c;
+// ── Theme Variables ────────────────────────────────────────
+
+$themes: (
+  light: (
+    base: #fff,
+    base-light: #f7f0f5,
+    base-purple: #ead7ef,
+    deep-purple: #2a0f4e,
+    text: #2a0f4e,
+    svg: #2a0f4e,
+  ),
+  dark: (
+    base: #181225,
+    base-light: #1e1535,
+    base-purple: #401d49,
+    deep-purple: #ead7ef,
+    text: #ead7ef,
+    svg: #ead7ef,
+  )
+);
+
+// ── Colors (light defaults) ────────────────────────────────
+
+$base-dark-purple: #2a0f4e;
 $base-purple: #6e5e9c;
 $base-purple-200: #cdb3d6;
 $base-pink: #eedfe4;
 $base-light-purple: #ead7ef;
 
-$base-dark-purple-2: #6c3f7c;
-$base-purple-2: #6e5e9c;
-$base-purple-200-2: #cdb3d6;
-$base-pink-2: #eedfe4;
-$base-light-purple-2: #ead7ef;
-
 $base-black: #090909;
 $base-white: #fdfdfd;
 
-// Mixins
+// ── Mixins ────────────────────────────────────────────────
+
 @mixin centered {
   display: flex;
   justify-content: center;

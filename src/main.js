@@ -5,13 +5,22 @@ import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import gsap from "gsap"
 import { OBJExporter } from 'three/examples/jsm/Addons.js';
+import { playPianoNote, playClick, startMusic, toggleMute } from './audio.js';
+
+// Expose for UI buttons
+window.toggleMute = toggleMute;
+window.startMusic = startMusic;
 
 // Constants
-import { textureMap, skybox, video } from './constants/textures.js';
-import { glassMaterialConfig, whiteMaterialConfig, waterMaterialConfig, meshPatterns } from './constants/materials.js';
-import { hoverAnimation, fanRotation, modalTransition } from './constants/animations.js';
-import { socialLinks, modalSelectors, modalButtonPatterns } from './constants/interactions.js';
-import { cameraConfig, controlsConfig, rendererConfig } from './constants/camera.js';
+import {
+  textureMap, skybox, video,
+  glassMaterialConfig, whiteMaterialConfig, waterMaterialConfig, meshPatterns,
+  hoverAnimation, fanRotation, modalTransition,
+  socialLinks, modalSelectors, modalButtonPatterns,
+  cameraConfig, controlsConfig, rendererConfig,
+} from './constants/config.js';
+
+import { setupIntroObject, playIntroAnimation } from './introAnimations.js';
 
 
 const canvas = document.querySelector("#experience-canvas")
@@ -25,6 +34,25 @@ const modals = Object.fromEntries(
 );
 
 let touchHappened = false;
+
+let isModalOpen = false;
+const overlay = document.querySelector(".overlay");
+
+// Overlay click to close modal
+overlay.addEventListener("touchend", (e) => {
+  touchHappened = true;
+  e.preventDefault();
+  const modal = document.querySelector('.modal[style*="display: block"]');
+  if (modal) hideModal(modal);
+}, {passive: false});
+
+overlay.addEventListener("click", (e) => {
+  if (touchHappened) return;
+  e.preventDefault();
+  const modal = document.querySelector('.modal[style*="display: block"]');
+  if (modal) hideModal(modal);
+}, {passive: false});
+
 document.querySelectorAll(".modal-exit-button").forEach((button)=>{
   button.addEventListener("touchend",(e)=>{
     touchHappened = true
@@ -39,10 +67,11 @@ document.querySelectorAll(".modal-exit-button").forEach((button)=>{
   },{passive: false})
 })
 
-let isModalOpen = false;
 const showModal = (modal)=>{
   modal.style.display = "block"
+  overlay.style.display = "block"
   isModalOpen = true;
+  playClick();
   controls.enabled = false;
 
   if(currentHoveredObject){
@@ -52,15 +81,19 @@ const showModal = (modal)=>{
   document.body.style.cursor = "default";
   currentIntersects = [];
 
-  gsap.set(modal, {opacity: 0});
-  gsap.to(modal, {opacity: 1, duration: modalTransition.fadeInDuration});
+  gsap.set(modal, {opacity: 0, scale: 0});
+  gsap.set(overlay, {opacity: 0});
+  gsap.to(overlay, {opacity: 1, duration: 0.5});
+  gsap.to(modal, {opacity: 1, scale: 1, duration: 0.5, ease: "back.out(2)"});
 }
 const hideModal = (modal)=>{
-  modal.style.display = "block"
   isModalOpen = false;
+  playClick();
   controls.enabled = true;
-  gsap.to(modal, {opacity: 0, duration: modalTransition.fadeOutDuration, onComplete: ()=>{
+  gsap.to(overlay, {opacity: 0, duration: 0.5});
+  gsap.to(modal, {opacity: 0, scale: 0, duration: 0.5, ease: "back.in(2)", onComplete: ()=>{
     modal.style.display = "none"
+    overlay.style.display = "none"
   }});
 }
 
@@ -89,8 +122,13 @@ const environmentMap = cubeTextureLoader.load(skybox.faces);
 const dracoLoader = new DRACOLoader();
 dracoLoader.setDecoderPath( '/draco/' );
 
-const loader = new GLTFLoader();
+// ponytail: LoadingManager tracks when all assets finish loading
+const loadingManager = new THREE.LoadingManager();
+const loader = new GLTFLoader(loadingManager);
 loader.setDRACOLoader( dracoLoader );
+
+// Intro animation objects map (prefix → mesh[])
+const introObjects = new Map();
 
 
 const loadedTextures = {
@@ -131,14 +169,22 @@ const waterMaterial = new THREE.MeshBasicMaterial(waterMaterialConfig);
 loader.load("/models/Room_Portfolio-v1.glb", (glb) => {
   glb.scene.traverse(child=>{
     if(child.isMesh){
-      if(child.name.includes(meshPatterns.raycaster)){
-          raycasterObjects.push(child)
-      }
+      // Capture hover data BEFORE intro setup (which zeros scale)
       if(child.name.includes(meshPatterns.hover)){
         child.userData.initialScale = new THREE.Vector3().copy(child.scale)
         child.userData.initialPosition = new THREE.Vector3().copy(child.position)
         child.userData.initialRotation = new THREE.Euler().copy(child.rotation)
+      }
 
+      // Set up intro animation objects (scale to 0, store position)
+      const introPrefix = setupIntroObject(child);
+      if(introPrefix){
+        if (!introObjects.has(introPrefix)) introObjects.set(introPrefix, []);
+        introObjects.get(introPrefix).push(child);
+      }
+
+      if(child.name.includes(meshPatterns.raycaster) || child.name.includes("_Key_")){
+          raycasterObjects.push(child)
       }
 
       if(child.name.includes(meshPatterns.glass)){
@@ -175,10 +221,65 @@ loader.load("/models/Room_Portfolio-v1.glb", (glb) => {
         })
       }
     }
-
-    scene.add(glb.scene);
   });
+
+  scene.add(glb.scene);
 });
+
+// ––––––––––Loading Screen & Intro –––––––––– //
+
+const loadingScreen = document.querySelector(".loading-screen");
+const loadingScreenButton = document.querySelector(".loading-screen-button");
+const noSoundButton = document.querySelector(".no-sound-button");
+
+let introPlayed = false;
+
+loadingManager.onLoad = function () {
+  loadingScreenButton.textContent = "Enter!";
+  loadingScreenButton.style.cursor = "pointer";
+
+  noSoundButton.textContent = "Enter without Sound";
+
+  function handleEnter(withSound = true) {
+    if (introPlayed) return;
+    introPlayed = true;
+
+    loadingScreenButton.style.cursor = "default";
+    loadingScreenButton.textContent = "~ Loading ~";
+
+    if (!withSound) {
+      window.toggleMute?.();
+    } else {
+      window.startMusic?.();
+    }
+
+    playReveal();
+  }
+
+  loadingScreenButton.addEventListener("click", () => handleEnter(true));
+  noSoundButton.addEventListener("click", () => handleEnter(false));
+};
+
+function playReveal() {
+  const tl = gsap.timeline();
+
+  tl.to(loadingScreen, {
+    scale: 0.5,
+    duration: 1.2,
+    delay: 0.25,
+    ease: "back.in(1.8)",
+  }).to(loadingScreen, {
+    y: "200vh",
+    transform: "perspective(1000px) rotateX(45deg) rotateY(-35deg)",
+    duration: 1.2,
+    ease: "back.in(1.8)",
+    onComplete: () => {
+      isModalOpen = false;
+      playIntroAnimation(introObjects);
+      loadingScreen.remove();
+    },
+  }, "-=0.1");
+}
 
 // ––––––––––Scene–––––––––– //
 const scene = new THREE.Scene();
@@ -204,6 +305,153 @@ controls.enableDamping = controlsConfig.enableDamping;
 controls.dampingFactor = controlsConfig.dampingFactor;
 controls.update();
 controls.target.set(controlsConfig.target.x, controlsConfig.target.y, controlsConfig.target.z);
+
+// ––––––––––UI Toggle Buttons–––––––––– //
+
+const themeToggleButton = document.querySelector(".theme-toggle-button");
+const muteToggleButton = document.querySelector(".mute-toggle-button");
+const sunSvg = document.querySelector(".sun-svg");
+const moonSvg = document.querySelector(".moon-svg");
+const soundOffSvg = document.querySelector(".sound-off-svg");
+const soundOnSvg = document.querySelector(".sound-on-svg");
+
+let isNightMode = false;
+
+themeToggleButton.addEventListener("click", (e) => {
+  if (touchHappened) return;
+  e.preventDefault();
+  isNightMode = !isNightMode;
+  playClick();
+
+  gsap.to(themeToggleButton, {
+    rotate: 45,
+    scale: 5,
+    duration: 0.5,
+    ease: "back.out(2)",
+    onStart: () => {
+      if (isNightMode) {
+        sunSvg.style.display = "none";
+        moonSvg.style.display = "block";
+        document.body.classList.remove("light-theme");
+        document.body.classList.add("dark-theme");
+      } else {
+        moonSvg.style.display = "none";
+        sunSvg.style.display = "block";
+        document.body.classList.remove("dark-theme");
+        document.body.classList.add("light-theme");
+      }
+      gsap.to(themeToggleButton, {
+        rotate: 0,
+        scale: 1,
+        duration: 0.5,
+        ease: "back.out(2)",
+        onComplete: () => {
+          gsap.set(themeToggleButton, { clearProps: "all" });
+        },
+      });
+    },
+  });
+});
+
+muteToggleButton.addEventListener("click", (e) => {
+  if (touchHappened) return;
+  e.preventDefault();
+  const muted = toggleMute();
+  playClick();
+
+  gsap.to(muteToggleButton, {
+    rotate: -45,
+    scale: 5,
+    duration: 0.5,
+    ease: "back.out(2)",
+    onStart: () => {
+      if (muted) {
+        soundOnSvg.style.display = "none";
+        soundOffSvg.style.display = "block";
+      } else {
+        soundOffSvg.style.display = "none";
+        soundOnSvg.style.display = "block";
+      }
+      gsap.to(muteToggleButton, {
+        rotate: 0,
+        scale: 1,
+        duration: 0.5,
+        ease: "back.out(2)",
+        onComplete: () => {
+          gsap.set(muteToggleButton, { clearProps: "all" });
+        },
+      });
+    },
+  });
+});
+
+muteToggleButton.addEventListener("touchend", (e) => {
+  touchHappened = true;
+  e.preventDefault();
+  const muted = toggleMute();
+  playClick();
+
+  gsap.to(muteToggleButton, {
+    rotate: -45,
+    scale: 5,
+    duration: 0.5,
+    ease: "back.out(2)",
+    onStart: () => {
+      if (muted) {
+        soundOnSvg.style.display = "none";
+        soundOffSvg.style.display = "block";
+      } else {
+        soundOffSvg.style.display = "none";
+        soundOnSvg.style.display = "block";
+      }
+      gsap.to(muteToggleButton, {
+        rotate: 0,
+        scale: 1,
+        duration: 0.5,
+        ease: "back.out(2)",
+        onComplete: () => {
+          gsap.set(muteToggleButton, { clearProps: "all" });
+        },
+      });
+    },
+  });
+}, {passive: false});
+
+themeToggleButton.addEventListener("touchend", (e) => {
+  touchHappened = true;
+  e.preventDefault();
+  isNightMode = !isNightMode;
+  playClick();
+
+  gsap.to(themeToggleButton, {
+    rotate: 45,
+    scale: 5,
+    duration: 0.5,
+    ease: "back.out(2)",
+    onStart: () => {
+      if (isNightMode) {
+        sunSvg.style.display = "none";
+        moonSvg.style.display = "block";
+        document.body.classList.remove("light-theme");
+        document.body.classList.add("dark-theme");
+      } else {
+        moonSvg.style.display = "none";
+        sunSvg.style.display = "block";
+        document.body.classList.remove("dark-theme");
+        document.body.classList.add("light-theme");
+      }
+      gsap.to(themeToggleButton, {
+        rotate: 0,
+        scale: 1,
+        duration: 0.5,
+        ease: "back.out(2)",
+        onComplete: () => {
+          gsap.set(themeToggleButton, { clearProps: "all" });
+        },
+      });
+    },
+  });
+}, {passive: false});
 
 
 
@@ -247,6 +495,12 @@ window.addEventListener("touchend", (e)=>{
 function handleRaycasterInteraction(){
   if(currentIntersects.length>0){
     const object = currentIntersects[0].object;
+
+    // Piano key detection
+    if(object.name.includes("_Key_")){
+      playPianoNote(object.name);
+      return;
+    }
     Object.entries(socialLinks).forEach(([key, url])=>{
       if(object.name.includes(key)){
         const newWindow = window.open();

@@ -7,25 +7,87 @@
     <title>room-portfolio</title>
   </head>
   <body>
+    <!-- Loading Screen -->
+    <div class="loading-screen">
+      <button class="loading-screen-button">Loading...</button>
+      <button class="no-sound-button">Enter without Sound</button>
+      <div class="instructions">
+        <span class="desktop-instructions">click and drag to look around • scroll to zoom</span>
+        <span class="mobile-instructions">tap and drag to look around • pinch to zoom</span>
+      </div>
+    </div>
+
+    <!-- Overlay for modals -->
+    <div class="overlay"></div>
+
+    <!-- Toggle Buttons -->
+    <button class="mute-toggle-button">
+      <svg class="sound-off-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+        <line x1="23" y1="9" x2="17" y2="15"></line>
+        <line x1="17" y1="9" x2="23" y2="15"></line>
+      </svg>
+      <svg class="sound-on-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none">
+        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+        <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+        <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+      </svg>
+    </button>
+    <button class="theme-toggle-button">
+      <svg class="sun-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none">
+        <circle cx="12" cy="12" r="5"></circle>
+        <line x1="12" y1="1" x2="12" y2="3"></line>
+        <line x1="12" y1="21" x2="12" y2="23"></line>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+        <line x1="1" y1="12" x2="3" y2="12"></line>
+        <line x1="21" y1="12" x2="23" y2="12"></line>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+      </svg>
+      <svg class="moon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+      </svg>
+    </button>
+
     <div id="app"></div>
 
-    <div class="about modal">
-      <h1 class="modal-title">workworkworkworkworkworkworkworkworkworkworkwork </h1>
+    <!-- Modals -->
+    <div class="work modal">
+      <h1 class="modal-title">~ My Work ~</h1>
       <button class="modal-exit-button">
-        EXIT
-      </button> 
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+      <div class="modal-content-wrapper">
+        <!-- Work items here -->
+      </div>
+    </div>
+    <div class="about modal">
+      <h1 class="modal-title">~ About Me ~</h1>
+      <button class="modal-exit-button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+      <div class="modal-content-wrapper">
+        <!-- About content here -->
+      </div>
     </div>
     <div class="contact modal">
-      <h1 class="modal-title">workworkworkworkworkworkworkworkworkworkworkwork </h1>
+      <h1 class="modal-title">~ Say hello! ~</h1>
       <button class="modal-exit-button">
-        EXIT
-      </button> 
-    </div>
-    <div class="work modal">
-      <h1 class="modal-title">workworkworkworkworkworkworkworkworkworkworkwork </h1>
-      <button class="modal-exit-button">
-        EXIT
-      </button> 
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+      <div class="modal-content-wrapper">
+        <!-- Contact content here -->
+      </div>
     </div>
 
     <div id="experience">
