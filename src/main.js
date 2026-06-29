@@ -303,6 +303,12 @@ const controls = new OrbitControls( camera, renderer.domElement );
 // controls.update() must be called after any manual changes to the camera's transform
 controls.enableDamping = controlsConfig.enableDamping;
 controls.dampingFactor = controlsConfig.dampingFactor;
+controls.minPolarAngle = controlsConfig.minPolarAngle;
+controls.maxPolarAngle = controlsConfig.maxPolarAngle;
+controls.minAzimuthAngle = controlsConfig.minAzimuthAngle;
+controls.maxAzimuthAngle = controlsConfig.maxAzimuthAngle;
+controls.minDistance = controlsConfig.minDistance;
+controls.maxDistance = controlsConfig.maxDistance;
 controls.update();
 controls.target.set(controlsConfig.target.x, controlsConfig.target.y, controlsConfig.target.z);
 

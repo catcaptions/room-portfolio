@@ -80,9 +80,9 @@ export const modalTransition = {
 // ── Interactions ──────────────────────────────────────────
 
 export const socialLinks = {
-  GitHub: "https://www.github.com/",
-  LinkedIn: "https://www.linkedin.com/",
-  YouTube: "https://www.youtube.com/",
+  GitHub: "https://github.com/catcaptions",
+  LinkedIn: "https://linkedin.com/in/akinoluwa-lasisi-808b6b3a4",
+  Instagram: "https://instagram.com/catcaptions",
 };
 
 export const modalSelectors = {
@@ -121,7 +121,14 @@ export const cameraConfig = {
 export const controlsConfig = {
   enableDamping: true,
   dampingFactor: 0.05,
-  target: { x: -0.4157927443992023, y: 1.0391870673201113, z: -0.37819867418043385 },
+  target: { x: -1.253, y: 0.6312, z: -1.253 },
+  // Rotation limits — prevents seeing the back of the scene
+  minPolarAngle: Math.PI / 18,      // ~10° from top
+  maxPolarAngle: Math.PI / 2,       // 90° — don't go below floor
+  minAzimuthAngle: 0,               // don't rotate left past front
+  maxAzimuthAngle: Math.PI / 2,   // ~78° — don't rotate right past side
+  minDistance: 5,
+  maxDistance: 14,
 };
 
 export const rendererConfig = {

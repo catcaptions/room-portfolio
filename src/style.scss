@@ -62,7 +62,7 @@ body {
   transform: translate(-50%, -50%);
   width: 108vw;
   height: 108vh;
-  background: #2a0f4e;
+  background: #3D7A80;
   border-radius: 48px;
   z-index: 10000;
   display: flex;
@@ -204,6 +204,26 @@ body {
   max-height: calc(80vh - 100px);
   overflow-y: auto;
 
+  p {
+    font-family: "Shifty Notes", sans-serif;
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin-bottom: 12px;
+    color: var(--light-text);
+  }
+
+  strong {
+    color: var(--light-deep-purple);
+  }
+
+  code {
+    background: var(--light-deep-purple);
+    color: var(--light-base-purple);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.9rem;
+  }
+
   // Custom scrollbar
   &::-webkit-scrollbar {
     width: 8px;
@@ -217,6 +237,83 @@ body {
   &::-webkit-scrollbar-thumb {
     background: var(--light-deep-purple);
     border-radius: 4px;
+  }
+}
+
+// ── Project Cards ──────────────────────────────────────────
+
+.project-card {
+  padding: 16px;
+  margin-bottom: 16px;
+  border: 2px solid var(--light-deep-purple);
+  border-radius: 12px;
+  background: var(--light-base-light);
+
+  h3 {
+    font-family: "Motley Forces", sans-serif;
+    font-size: 1.3rem;
+    color: var(--light-deep-purple);
+    margin-bottom: 8px;
+  }
+
+  p {
+    margin-bottom: 10px;
+  }
+}
+
+.skills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+
+  &::before {
+    content: "Skills: ";
+    font-weight: bold;
+    color: var(--light-deep-purple);
+  }
+}
+
+.skill-tag {
+  background: var(--light-deep-purple);
+  color: var(--light-base-purple);
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+}
+
+// ── Contact Links ──────────────────────────────────────────
+
+.contact-links {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.contact-link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+  color: var(--light-deep-purple);
+  transition: transform 0.3s ease;
+
+  &:hover {
+    transform: scale(1.15) rotate(-5deg);
+  }
+
+  svg {
+    width: 40px;
+    height: 40px;
+    stroke: var(--light-deep-purple);
+    fill: none;
+  }
+
+  span {
+    font-family: "Shifty Notes", sans-serif;
+    font-size: 0.9rem;
   }
 }
 
@@ -274,6 +371,42 @@ body.dark-theme {
     stroke: var(--dark-deep-purple);
   }
 
+  .modal-content-wrapper {
+    p { color: var(--dark-text); }
+    strong { color: var(--dark-deep-purple); }
+    code { background: var(--dark-deep-purple); color: var(--dark-base-purple); }
+
+    &::-webkit-scrollbar-track {
+      background: var(--dark-base-light);
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: var(--dark-deep-purple);
+    }
+  }
+
+  .project-card {
+    border-color: var(--dark-deep-purple);
+    background: var(--dark-base-light);
+
+    h3 { color: var(--dark-deep-purple); }
+  }
+
+  .skills::before {
+    color: var(--dark-deep-purple);
+  }
+
+  .skill-tag {
+    background: var(--dark-deep-purple);
+    color: var(--dark-base-purple);
+  }
+
+  .contact-link {
+    color: var(--dark-deep-purple);
+
+    svg { stroke: var(--dark-deep-purple); }
+  }
+
   .mute-toggle-button,
   .theme-toggle-button {
     background: var(--dark-base-purple);
@@ -281,16 +414,6 @@ body.dark-theme {
 
     svg {
       stroke: var(--dark-deep-purple);
-    }
-  }
-
-  .modal-content-wrapper {
-    &::-webkit-scrollbar-track {
-      background: var(--dark-base-light);
-    }
-
-    &::-webkit-scrollbar-thumb {
-      background: var(--dark-deep-purple);
     }
   }
 }

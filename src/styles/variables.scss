@@ -2,30 +2,30 @@
 
 $themes: (
   light: (
-    base: #fff,
-    base-light: #f7f0f5,
-    base-purple: #ead7ef,
-    deep-purple: #2a0f4e,
-    text: #2a0f4e,
-    svg: #2a0f4e,
+    base: #EBF3F5,
+    base-light: #F5F9FA,
+    base-purple: #D4E8ED,
+    deep-purple: #3D7A80,
+    text: #3D3028,
+    svg: #3D7A80,
   ),
   dark: (
-    base: #181225,
-    base-light: #1e1535,
-    base-purple: #401d49,
-    deep-purple: #ead7ef,
-    text: #ead7ef,
-    svg: #ead7ef,
+    base: #1C2B2E,
+    base-light: #243639,
+    base-purple: #2A4A4F,
+    deep-purple: #D4E8ED,
+    text: #D4E8ED,
+    svg: #D4E8ED,
   )
 );
 
 // ── Colors (light defaults) ────────────────────────────────
 
-$base-dark-purple: #2a0f4e;
-$base-purple: #6e5e9c;
-$base-purple-200: #cdb3d6;
-$base-pink: #eedfe4;
-$base-light-purple: #ead7ef;
+$base-dark-purple: #3D7A80;
+$base-purple: #6BA3A8;
+$base-purple-200: #A8D1D5;
+$base-pink: #F0E6DE;
+$base-light-purple: #D4E8ED;
 
 $base-black: #090909;
 $base-white: #fdfdfd;
