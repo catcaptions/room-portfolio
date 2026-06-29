@@ -121,6 +121,7 @@ export const cameraConfig = {
 export const controlsConfig = {
   enableDamping: true,
   dampingFactor: 0.05,
+  enablePan: false,
   target: { x: -1.253, y: 0.6312, z: -1.253 },
   // Rotation limits — prevents seeing the back of the scene
   minPolarAngle: Math.PI / 18,      // ~10° from top

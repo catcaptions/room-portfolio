@@ -417,3 +417,96 @@ body.dark-theme {
     }
   }
 }
+
+// ── Responsive ─────────────────────────────────────────────
+
+@media (max-width: 768px) {
+  .loading-screen {
+    width: 100vw;
+    height: 100vh;
+    border-radius: 0;
+  }
+
+  .loading-screen-button {
+    font-size: 32px;
+  }
+
+  .no-sound-button {
+    font-size: 18px;
+  }
+
+  .instructions {
+    font-size: 18px;
+    padding: 0 20px;
+    text-align: center;
+  }
+
+  .desktop-instructions { display: none; }
+  .mobile-instructions { display: block; }
+
+  .modal {
+    width: 95%;
+    max-height: 85vh;
+    border-width: 5px;
+    border-radius: 18px;
+
+    &.about { max-width: 95%; }
+    &.contact { max-width: 95%; }
+  }
+
+  .modal-title {
+    font-size: 24px;
+    padding: 14px;
+    margin: 8px;
+    border-radius: 3rem;
+  }
+
+  .modal-exit-button {
+    top: 10px;
+    left: 10px;
+    width: 32px;
+    height: 32px;
+  }
+
+  .modal-content-wrapper {
+    padding: 14px;
+
+    p {
+      font-size: 1rem;
+    }
+  }
+
+  .project-card {
+    padding: 12px;
+
+    h3 {
+      font-size: 1.1rem;
+    }
+  }
+
+  .contact-links {
+    gap: 16px;
+  }
+
+  .contact-link svg {
+    width: 32px;
+    height: 32px;
+  }
+
+  .toggle-buttons {
+    top: 12px;
+    right: 12px;
+    gap: 10px;
+  }
+
+  .mute-toggle-button,
+  .theme-toggle-button {
+    width: 40px;
+    height: 40px;
+
+    svg {
+      width: 20px;
+      height: 20px;
+    }
+  }
+}

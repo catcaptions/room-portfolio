@@ -257,7 +257,9 @@ loadingManager.onLoad = function () {
   }
 
   loadingScreenButton.addEventListener("click", () => handleEnter(true));
+  loadingScreenButton.addEventListener("touchend", (e) => { e.preventDefault(); handleEnter(true); }, {passive: false});
   noSoundButton.addEventListener("click", () => handleEnter(false));
+  noSoundButton.addEventListener("touchend", (e) => { e.preventDefault(); handleEnter(false); }, {passive: false});
 };
 
 function playReveal() {
@@ -302,6 +304,7 @@ const controls = new OrbitControls( camera, renderer.domElement );
 
 // controls.update() must be called after any manual changes to the camera's transform
 controls.enableDamping = controlsConfig.enableDamping;
+controls.enablePan = controlsConfig.enablePan;
 controls.dampingFactor = controlsConfig.dampingFactor;
 controls.minPolarAngle = controlsConfig.minPolarAngle;
 controls.maxPolarAngle = controlsConfig.maxPolarAngle;
